@@ -23,7 +23,7 @@ body{
   display: none;
 }
 img{
-  background-color:white;
+  background-color:#eda;
 }
 a{
   color: #eef;
@@ -131,18 +131,14 @@ function scale(x, y, child){
 }
 
 function randomShape(size,style){
-  var r = Math.floor(Math.random()*3);
-  switch(r){
-    case 0:
-      return circle(size, style);
-    break;
-    case 1:
-      return rect(size*(Math.sqrt(2)), size*(Math.sqrt(2)), style);
-      //return group([circle(size, style), rect(size*(Math.sqrt(2)), size*(Math.sqrt(2)), style)]);
-    break;
-    case 2:
-      return npoly(size, (3 + Math.floor(Math.random()*16)), (3 + Math.floor(Math.random()*16)), style);
-    break;
+  var r =Math.random();
+  if(r > 0.4){
+    return circle(size, style);
+  }else if(r > 0.2){
+    return rect(size*(Math.sqrt(2)), size*(Math.sqrt(2)), style);
+    //return group([circle(size, style), rect(size*(Math.sqrt(2)), size*(Math.sqrt(2)), style)]);
+  }else{
+    return npoly(size, (3 + Math.floor(Math.random()*16)), (3 + Math.floor(Math.random()*16)), style);
   }
 }
 
@@ -165,7 +161,7 @@ function generate(depth = 0,ls = 1){
       var elm = generate(depth + 1, ls * s);
       base.appendChild(elm);
       return base;
-    }else if(r > 0.6){ //
+    }else if(r > 0.6){ //bebel
       var st = style(color, "none", Math.floor(Math.random()*width + 1)/wres/ls);
       var elm = group([]);
       var rspace = 5 + Math.random()*10;
@@ -193,10 +189,11 @@ function generate(depth = 0,ls = 1){
       var elm = generate(depth, ls); // dont count depth
       base.appendChild(elm);
       return base;
-    }else if(r > 0.4 && depth > 2){ // twin scale in
+    }else if(r > 0.4){ // twin scale in
       var st = style(color, "none", Math.floor(Math.random()*width + 1)/wres/ls);
-      var s1 = translate(50,0,[scale(0.5, 0.5,[randomShape(100, st),generate(depth + 1, ls*0.5)])]);
-      var s2 = translate(-50,0,[scale(0.5, 0.5,[randomShape(100, st),generate(depth + 1, ls*0.5)])]);
+      var ratio = Math.random();
+      var s1 = translate(-100 + ratio/2*200,0,[scale(ratio, ratio,[randomShape(100*ratio, st),generate(depth + 1, ls*ratio)])]);
+      var s2 = translate(-100 + ((ratio+1)/2*200),0,[scale(1-ratio, 1-ratio,[randomShape(100*(1-ratio), st),generate(depth + 1, ls*(1-ratio))])]);
 
       return group([s1,s2])
     }else{ // flower
