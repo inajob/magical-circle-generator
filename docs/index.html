@@ -156,16 +156,36 @@ function generate(depth = 0,ls = 1){
   var r = Math.random();
 
   if(depth < 10){
-    if(r > 0.5){ // simple scale in
+    if(r > 0.7){ // simple scale in
       var s = (Math.random())*0.2 + 0.8;
       var st = style(color, "none", Math.floor(Math.random()*width + 1)/wres/ls);
       // draw base circle
       var base = scale(s,s,[randomShape(100, st)])
 
-      var elm = generate(depth + 1, ls*s);
+      var elm = generate(depth + 1, ls * s);
       base.appendChild(elm);
       return base;
-    }else if(r > 0.4){ // simple rotate
+    }else if(r > 0.6){ //
+      var st = style(color, "none", Math.floor(Math.random()*width + 1)/wres/ls);
+      var elm = group([]);
+      var rspace = 5 + Math.random()*10;
+      var count = Math.floor(Math.random()*5);
+      var r = 100;
+      var npn = 3 + Math.floor(Math.random()*16);
+      var nps = 3 + Math.floor(Math.random()*16);
+      var mode = Math.floor(Math.random()*3);
+      for(i = 0; i < count; i ++){
+        switch(mode){
+          case 0:elm.appendChild(circle(r,st));break;
+          case 1:elm.appendChild(rect(r*(Math.sqrt(2)),r*(Math.sqrt(2)),st));break;
+          case 2:elm.appendChild(npoly(r, npn, nps, st));break;
+        }
+        r = r- rspace;
+      }
+      var nscale = (100 - rspace*count)/100
+      elm.appendChild(scale(nscale, nscale, [generate(depth + 1, ls * nscale)]));
+      return elm;
+    }else if(r > 0.5){ // simple rotate
       var s = Math.floor((Math.random())*8)*45;
       // draw base circle
       var base = rotate(s)
@@ -173,7 +193,7 @@ function generate(depth = 0,ls = 1){
       var elm = generate(depth, ls); // dont count depth
       base.appendChild(elm);
       return base;
-    }else if(r > 0.3 && depth > 2){ // twin scale in
+    }else if(r > 0.4 && depth > 2){ // twin scale in
       var st = style(color, "none", Math.floor(Math.random()*width + 1)/wres/ls);
       var s1 = translate(50,0,[scale(0.5, 0.5,[randomShape(100, st),generate(depth + 1, ls*0.5)])]);
       var s2 = translate(-50,0,[scale(0.5, 0.5,[randomShape(100, st),generate(depth + 1, ls*0.5)])]);
@@ -188,7 +208,7 @@ function generate(depth = 0,ls = 1){
         var relm = rotate(360 * i / num,[translate(0,100-size,[shape.cloneNode(true)])]);
         base.appendChild(relm);
       }
-      var s = (100-size*2)/100;
+      var s = (100-size)/100;
       var st = style(color, "none", Math.floor(Math.random()*width +1)/wres/ls);
       // draw base circle
       //base.appendChild(scale(s,s,[randomShape(100, st)]));
