@@ -6,4 +6,4 @@ JavaScriptを用いてSVG形式の魔法陣を自動生成しています。
 This JavaScript program generate "Magical Circle" as SVG format.
 Feel free to use generated "Magical Circle".
 
-![魔法陣](docs/ogp.jpg)
+![魔法陣](docs/ogp.png)
