@@ -149,6 +149,8 @@ function randomShape(size,style){
 var svg = document.getElementById("drawing");
 var line = document.createElementNS("http://www.w3.org/2000/svg", "line");
 var color = "black";
+var width = 1;
+var wres = 2;
 
 function generate(depth = 0,ls = 1){
   var r = Math.random();
@@ -156,7 +158,7 @@ function generate(depth = 0,ls = 1){
   if(depth < 10){
     if(r > 0.5){ // simple scale in
       var s = (Math.random())*0.2 + 0.8;
-      var st = style(color, "none", Math.floor(Math.random()*3 + 1)/ls);
+      var st = style(color, "none", Math.floor(Math.random()*width + 1)/wres/ls);
       // draw base circle
       var base = scale(s,s,[randomShape(100, st)])
 
@@ -168,10 +170,16 @@ function generate(depth = 0,ls = 1){
       // draw base circle
       var base = rotate(s)
 
-      var elm = generate(depth + 1, ls);
+      var elm = generate(depth, ls); // dont count depth
       base.appendChild(elm);
       return base;
-    }else if(r > 0.2){ // flower
+    }else if(r > 0.3 && depth > 2){ // twin scale in
+      var st = style(color, "none", Math.floor(Math.random()*width + 1)/wres/ls);
+      var s1 = translate(50,0,[scale(0.5, 0.5,[randomShape(100, st),generate(depth + 1, ls*0.5)])]);
+      var s2 = translate(-50,0,[scale(0.5, 0.5,[randomShape(100, st),generate(depth + 1, ls*0.5)])]);
+
+      return group([s1,s2])
+    }else{ // flower
       var base = group();
       var size = Math.random()*100;
       var num = (1 << (Math.random()*4 + 1));
@@ -181,24 +189,19 @@ function generate(depth = 0,ls = 1){
         base.appendChild(relm);
       }
       var s = (100-size*2)/100;
-      var st = style(color, "none", Math.floor(Math.random()*3 +1)/ls);
+      var st = style(color, "none", Math.floor(Math.random()*width +1)/wres/ls);
       // draw base circle
-      base.appendChild(scale(s,s,[randomShape(100, st)]));
+      //base.appendChild(scale(s,s,[randomShape(100, st)]));
+      base.appendChild(scale(s,s,[generate(depth + 1, ls * s)]));
 
       return base;
-    }else{ // twin scale in
-      var st = style(color, "none", Math.floor(Math.random()*3 + 1)/ls);
-      var s1 = translate(50,0,[scale(0.5, 0.5,[randomShape(100, st),generate(depth + 1, ls*0.5)])]);
-      var s2 = translate(-50,0,[scale(0.5, 0.5,[randomShape(100, st),generate(depth + 1, ls*0.5)])]);
-
-      return group([s1,s2])
     }
   }
-  var s = style(color, "none", Math.floor(Math.random()*3 + 1)/ls);
+  var s = style(color, "none", Math.floor(Math.random()*width + 1)/wres/ls);
   return randomShape(100, s);
 }
 
-var s = style(color, "none", Math.floor(Math.random()*3 + 1));
+var s = style(color, "none", Math.floor(Math.random()*width + 1)/wres);
 svg.appendChild(circle(100, s));
 
 svg.appendChild(generate());
