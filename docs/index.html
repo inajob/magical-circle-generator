@@ -1,0 +1,214 @@
+<html>
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=520">
+
+<meta name="twitter:card" content="summary" />
+<meta name="twitter:site" content="@ina_ani" />
+<meta property="og:title" content="魔法陣自動生成 - Magical Circle Generator" />
+<meta property="og:description" content="自動的に魔法陣を生成するページです" />
+<meta property="og:image" content="https://inajob.github.io/magical-circle-generator/ogp.png" />
+
+<link href="https://fonts.googleapis.com/css?family=Sawarabi+Mincho" rel="stylesheet">
+
+<style>
+body{
+  text-align:center;
+  background-color: black;
+  color: white;
+
+  font-family: "Sawarabi Mincho";
+}
+#working{
+  display: none;
+}
+img{
+  background-color:white;
+}
+a{
+  color: #eef;
+}
+</style>
+</head>
+<body>
+
+<style>#forkongithub a{background:#000;color:#fff;text-decoration:none;font-family:arial,sans-serif;text-align:center;font-weight:bold;padding:5px 40px;font-size:1rem;line-height:2rem;position:relative;transition:0.5s;}#forkongithub a:hover{background:#c11;color:#fff;}#forkongithub a::before,#forkongithub a::after{content:"";width:100%;display:block;position:absolute;top:1px;left:0;height:1px;background:#fff;}#forkongithub a::after{bottom:1px;top:auto;}@media screen and (min-width:800px){#forkongithub{position:fixed;display:block;top:0;right:0;width:200px;overflow:hidden;height:200px;z-index:9999;}#forkongithub a{width:200px;position:absolute;top:60px;right:-60px;transform:rotate(45deg);-webkit-transform:rotate(45deg);-ms-transform:rotate(45deg);-moz-transform:rotate(45deg);-o-transform:rotate(45deg);box-shadow:4px 4px 10px rgba(0,0,0,0.8);}}</style><span id="forkongithub"><a href="https://github.com/inajob/magical-circle-generator">Fork me on GitHub</a></span>
+
+<h1>魔法陣自動生成</h1>
+<p>読み込むたびにランダムな魔法陣が生成されます</p>
+<div id="render">
+</div>
+<div id="working">
+<svg id="drawing" width="500" height="500" viewBox="-110 -110 220 220" xmlns="http://www.w3.org/2000/svg">
+</svg>
+</div>
+<p>画像右クリックでSVG形式で保存できます。自由に使って問題ありません。</p>
+<hr />
+<div>
+created by <a href="http://twitter.com/ina_ani">@ina_ani</a>
+</div>
+
+<script>
+
+function svgElm(name){
+  return document.createElementNS("http://www.w3.org/2000/svg", name);
+}
+
+function style(stroke,fill,strokeWidth){
+  return {
+    stroke: stroke,
+    fill: fill,
+    strokeWidth: strokeWidth,
+  }
+}
+function addChild(p,c){
+  if(Array.isArray(c)){
+    c.forEach(function(i){
+      p.appendChild(i);
+    });
+  }
+  return p;
+}
+
+function circle(r, style){
+  var elm = svgElm("circle");
+  elm.setAttribute("r", r);
+  elm.setAttribute("stroke", style.stroke);
+  elm.setAttribute("stroke-width", style.strokeWidth);
+  elm.setAttribute("fill", style.fill);
+  return elm;
+}
+function rect(w,h, style){
+  var elm = svgElm("rect");
+  elm.setAttribute("x", -w/2);
+  elm.setAttribute("y", -h/2);
+  elm.setAttribute("width", w);
+  elm.setAttribute("height", h);
+  elm.setAttribute("stroke", style.stroke);
+  elm.setAttribute("stroke-width", style.strokeWidth);
+  elm.setAttribute("fill", style.fill);
+  return elm;
+}
+function npoly(r, n, s, style){
+  var elm = svgElm("polygon");
+  var points = [];
+  var c = 0;
+  for(var i = 0; i < n; i++){
+    points.push(r * Math.cos(Math.PI * 2 * c/n) + "," + r * Math.sin(Math.PI * 2 * c/n));
+    c += s;
+  }
+  elm.setAttribute("points", points.join(" "));
+  elm.setAttribute("stroke", style.stroke);
+  elm.setAttribute("stroke-width", style.strokeWidth);
+  elm.setAttribute("fill", style.fill);
+  return elm;
+}
+
+
+function group(child){
+  var elm = svgElm("g");
+  addChild(elm, child);
+  return elm;
+}
+
+function translate(x,y,child){
+  var elm = svgElm("g");
+  elm.setAttribute("transform","translate("+ x + ","+ y+")");
+  addChild(elm, child);
+  return elm;
+}
+function rotate(deg,child){
+  var elm = svgElm("g");
+  elm.setAttribute("transform","rotate("+ deg +")");
+  addChild(elm, child);
+  return elm;
+}
+function scale(x, y, child){
+  var elm = svgElm("g");
+  elm.setAttribute("transform","scale("+ x + ","+ y +")");
+  addChild(elm, child);
+  return elm;
+}
+
+function randomShape(size,style){
+  var r = Math.floor(Math.random()*3);
+  switch(r){
+    case 0:
+      return circle(size, style);
+    break;
+    case 1:
+      return rect(size*(Math.sqrt(2)), size*(Math.sqrt(2)), style);
+      //return group([circle(size, style), rect(size*(Math.sqrt(2)), size*(Math.sqrt(2)), style)]);
+    break;
+    case 2:
+      return npoly(size, (3 + Math.floor(Math.random()*16)), (3 + Math.floor(Math.random()*16)), style);
+    break;
+  }
+}
+
+var svg = document.getElementById("drawing");
+var line = document.createElementNS("http://www.w3.org/2000/svg", "line");
+var color = "black";
+
+function generate(depth = 0,ls = 1){
+  var r = Math.random();
+
+  if(depth < 10){
+    if(r > 0.5){ // simple scale in
+      var s = (Math.random())*0.2 + 0.8;
+      var st = style(color, "none", Math.floor(Math.random()*3 + 1)/ls);
+      // draw base circle
+      var base = scale(s,s,[randomShape(100, st)])
+
+      var elm = generate(depth + 1, ls*s);
+      base.appendChild(elm);
+      return base;
+    }else if(r > 0.4){ // simple rotate
+      var s = Math.floor((Math.random())*8)*45;
+      // draw base circle
+      var base = rotate(s)
+
+      var elm = generate(depth + 1, ls);
+      base.appendChild(elm);
+      return base;
+    }else if(r > 0.2){ // flower
+      var base = group();
+      var size = Math.random()*100;
+      var num = (1 << (Math.random()*4 + 1));
+      var shape = scale(size/100,size/100,[generate(depth + 7, ls*size/100)]);
+      for(var i = 0; i < num; i ++){
+        var relm = rotate(360 * i / num,[translate(0,100-size,[shape.cloneNode(true)])]);
+        base.appendChild(relm);
+      }
+      var s = (100-size*2)/100;
+      var st = style(color, "none", Math.floor(Math.random()*3 +1)/ls);
+      // draw base circle
+      base.appendChild(scale(s,s,[randomShape(100, st)]));
+
+      return base;
+    }else{ // twin scale in
+      var st = style(color, "none", Math.floor(Math.random()*3 + 1)/ls);
+      var s1 = translate(50,0,[scale(0.5, 0.5,[randomShape(100, st),generate(depth + 1, ls*0.5)])]);
+      var s2 = translate(-50,0,[scale(0.5, 0.5,[randomShape(100, st),generate(depth + 1, ls*0.5)])]);
+
+      return group([s1,s2])
+    }
+  }
+  var s = style(color, "none", Math.floor(Math.random()*3 + 1)/ls);
+  return randomShape(100, s);
+}
+
+var s = style(color, "none", Math.floor(Math.random()*3 + 1));
+svg.appendChild(circle(100, s));
+
+svg.appendChild(generate());
+
+var working = document.getElementById("working");
+var img = document.createElement("img");
+img.src = "data:image/svg+xml," + working.innerHTML;
+var render = document.getElementById("render");
+render.appendChild(img);
+
+</script>
+</body>
+</html>
